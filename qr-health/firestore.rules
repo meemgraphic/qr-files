@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner() {
+      return request.auth != null && request.auth.token.email == 'clayncodebranding@gmail.com';
+    }
+    match /users/{uid}/projects/{id} {
+      allow read, write: if owner();
+    }
+    match /users/{uid}/health/{id} {
+      allow read, write: if owner();
+    }
+    match /{path=**}/projects/{id} {
+      allow read: if owner();
+    }
+    match /logos/{id} {
+      allow get: if true;
+      allow create, update: if owner();
+    }
+    match /pages/{id} {
+      allow get: if true;
+      allow create, update, delete: if owner();
+      match /scans/{sid} {
+        allow create: if request.resource.data.keys().hasOnly(['t','dev','md','os','br','tz','lang','scr']);
+        allow read: if owner();
+      }
+    }
+  }
+}
